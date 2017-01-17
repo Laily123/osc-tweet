@@ -1,7 +1,7 @@
 package login
 
 import (
-	"net/url"
+	"fmt"
 	"osc-tweet/utils"
 	"path/filepath"
 	"regexp"
@@ -27,10 +27,7 @@ func Login(username string, password string) {
 	com.WriteFile(pathUsr, username)
 
 	http := &utils.Http{}
-	response, err := http.Post(DEV_URL, url.Values{
-		"username": {username},
-		"pwd":      {password},
-	}, true)
+	response, err := http.Post(DEV_URL, fmt.Sprintf("username=%s&pwd=%s", username, password), true, 0)
 
 	if err != nil {
 		log.Warnln("请检查网络")

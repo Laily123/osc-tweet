@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"regexp"
 	"time"
@@ -16,6 +15,8 @@ import (
 	"github.com/gogather/com"
 	"github.com/gogather/com/log"
 )
+
+var UA int
 
 const (
 	DEV_TWEET_URL  = "http://www.oschina.com/action/apiv2/tweet"
@@ -51,35 +52,12 @@ func Tweet(message string) {
 		return
 	}
 
-	fmt.Printf("test: %s\n", message)
-
-	// jsonData, ok := data.(map[string]interface{})
-	// if !ok {
-	// 	log.Redln("[Error]", "illeage data")
-	// 	return
-	// }
-
-	// userId, ok := jsonData["user"].(string)
-	// if !ok {
-	// 	log.Redln("[Error]", "get user id failed")
-	// 	return
-	// }
-
-	// userCode, ok := jsonData["user_code"].(string)
-	// if !ok {
-	// 	log.Redln("[Error]", "get user code failed")
-	// 	return
-	// }
-
 	http := &utils.Http{}
-	response, err := http.Post(DEV_TWEET_URL, url.Values{
-		"content": {message},
-	}, false)
+	response, err := http.Post(DEV_TWEET_URL, fmt.Sprintf("content=%s", message), false, 0)
 
 	if err != nil {
 		log.Warnln("[Error]", err)
 	}
-	fmt.Println("resp: ", response)
 
 	json, err := simplejson.NewJson([]byte(response))
 	if err != nil {

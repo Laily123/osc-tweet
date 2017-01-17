@@ -1,12 +1,13 @@
 package initial
 
 import (
-	"fmt"
 	"os"
 	"osc-tweet/login"
 	"osc-tweet/tweet"
 	"osc-tweet/utils"
 	"path/filepath"
+
+	"flag"
 
 	"github.com/gogather/com"
 	"github.com/gogather/com/log"
@@ -16,65 +17,62 @@ const (
 	VERSION = "0.0.0"
 )
 
+var option string
+var username string
+var password string
+var message string
+var phone int
+
+func init() {
+	flag.StringVar(&option, "o", "", "what operation you want,login or tweet")
+	flag.StringVar(&username, "name", "", "account username")
+	flag.StringVar(&password, "pwd", "", "account password")
+	flag.StringVar(&message, "message", "", "tweet message")
+	flag.IntVar(&phone, "ua", 0, "ua, 0 is iphone, 1 is android, default is 0")
+	flag.Parse()
+}
 func Run() {
 	initProfileDir()
 
-	length := len(os.Args)
-
-	username := ""
-	password := ""
-	message := ""
-
-	if length < 2 {
-		showHelp()
-	} else {
-		if os.Args[1] == "login" {
-			if length < 4 {
-				log.Dangerln("Invalid command, please use")
-				log.Warnln("    osc login username password")
-			} else {
-				username = os.Args[2]
-				password = os.Args[3]
-
-				login.Login(username, password)
-			}
-		} else if os.Args[1] == "tweet" {
-			if length < 3 {
-				log.Dangerln("Invalid command, please use")
-				log.Warnln("    osc tweet message")
-			} else {
-				message = os.Args[2]
-
-				tweet.Tweet(message)
-			}
-		} else if os.Args[1] == "status" {
-			login.GetStatus()
-		} else if os.Args[1] == "joke" {
-			tweet.Joke()
-		} else if os.Args[1] == "weather" {
-			location := "%E6%B7%B1%E5%9C%B3"
-			if len(os.Args) >= 3 {
-				location = os.Args[2]
-			}
-			tweet.Weather(location)
-		} else if os.Args[1] == "one" {
-			tweet.One()
-		} else if os.Args[1] == "help" {
-			showHelp()
-		} else {
-			log.Dangerln("Invalid command, please use")
-			log.Warnln("    osc help")
-		}
+	if option == "" {
+		flag.Usage()
+		return
 	}
-}
+	utils.UA = phone
+	switch option {
+	case "login":
+		if username == "" && password == "" {
+			log.Dangerln("Invalid command, please use")
+			log.Warnln("  -o login -name username -p password")
+		} else {
+			login.Login(username, password)
+		}
+	case "tweet":
+		if message == "" {
+			log.Dangerln("Invalid command, please use")
+			log.Warnln(" -o tweet -m message")
+		} else {
+			tweet.Tweet(message)
+		}
+	case "status":
+		login.GetStatus()
 
-func showHelp() {
-	log.Warnln("oschina command line tool")
-	fmt.Println("Usage:")
-	fmt.Println("    login user password")
-	fmt.Println("    status")
-	fmt.Println("    tweet message")
-	log.Blueln("version", VERSION)
+	case "joke":
+		tweet.Joke()
+	case "weather":
+		location := "%E6%B7%B1%E5%9C%B3"
+		if len(os.Args) >= 3 {
+			location = os.Args[2]
+		}
+		tweet.Weather(location)
+	case "one":
+		tweet.One()
+	case "help":
+		flag.Usage()
+	default:
+		log.Dangerln("Invalid command, please use")
+		flag.Usage()
+	}
 }
 
 func initProfileDir() {
