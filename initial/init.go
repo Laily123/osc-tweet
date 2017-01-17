@@ -22,12 +22,14 @@ var username string
 var password string
 var message string
 var phone int
+var configpath string
 
 func init() {
 	flag.StringVar(&option, "o", "", "what operation you want,login or tweet")
 	flag.StringVar(&username, "name", "", "account username")
 	flag.StringVar(&password, "pwd", "", "account password")
 	flag.StringVar(&message, "message", "", "tweet message")
+	flag.StringVar(&configpath, "c", "", "config file path")
 	flag.IntVar(&phone, "ua", 0, "ua, 0 is iphone, 1 is android, default is 0")
 	flag.Parse()
 }
@@ -40,6 +42,7 @@ func Run() {
 	}
 	utils.UA = phone
 	switch option {
+	// 登陆
 	case "login":
 		if username == "" && password == "" {
 			log.Dangerln("Invalid command, please use")
@@ -47,6 +50,7 @@ func Run() {
 		} else {
 			login.Login(username, password)
 		}
+		// 直接发送动弹
 	case "tweet":
 		if message == "" {
 			log.Dangerln("Invalid command, please use")
@@ -67,6 +71,8 @@ func Run() {
 		tweet.Weather(location)
 	case "one":
 		tweet.One()
+	case "auto":
+		Config(configpath)
 	case "help":
 		flag.Usage()
 	default:
@@ -85,8 +91,4 @@ func initProfileDir() {
 			log.Fatalln("Create profile directory failed!")
 		}
 	}
-}
-
-func readConfig() {
-
 }
