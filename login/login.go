@@ -1,30 +1,36 @@
 package login
 
 import (
-	"github.com/Laily123/osc-tweet/utils"
-	"github.com/gogather/com"
-	"github.com/gogather/com/log"
 	"net/url"
+	"osc-tweet/utils"
 	"path/filepath"
 	"regexp"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/gogather/com"
+	"github.com/gogather/com/log"
+)
+
+const (
+	DEV_URL  = "http://www.oschina.com/action/apiv2/login_validate"
+	PROD_URL = "https://www.oschina.net/action/apiv2/login_validate"
 )
 
 func Login(username string, password string) {
 	home := utils.GetHome()
 	pathPwd := filepath.Join(home, ".osc", "password")
 
-	password = utils.SHA1(password)
+	// password = utils.SHA1(password)
 	com.WriteFile(pathPwd, password)
 
 	pathUsr := filepath.Join(home, ".osc", "username")
 	com.WriteFile(pathUsr, username)
 
 	http := &utils.Http{}
-	response, err := http.Post("https://www.oschina.net/action/user/hash_login", url.Values{
-		"email":      {username},
-		"pwd":        {password},
-		"save_login": {"1"},
-	})
+	response, err := http.Post(DEV_URL, url.Values{
+		"username": {username},
+		"pwd":      {password},
+	}, true)
 
 	if err != nil {
 		log.Warnln("请检查网络")
@@ -32,27 +38,16 @@ func Login(username string, password string) {
 		return
 	}
 
-	// log.Blueln(response)
-	json, err := com.JsonDecode(response)
-	if err == nil {
-		msg, _ := json.(map[string]interface{})["msg"].(string)
-
-		errorCode, ok := json.(map[string]interface{})["error"].(float64)
-		if ok {
-			log.Redf("error[%d] %s,%s\n", int(errorCode), msg, "请去网页版登录")
-			return
-		}
-
-		failCount, ok := json.(map[string]interface{})["failCount"].(float64)
-		if ok {
-			log.Redln(msg)
-			log.Warnln("你还有", 3-int(failCount), "次尝试的机会")
-		} else {
-			log.Redln("Invalid Response")
-		}
-	} else {
+	json, err := simplejson.NewJson([]byte(response))
+	if err != nil {
+		log.Redln("登陆失败：", err)
+	}
+	code, _ := json.Get("code").Int()
+	if code == 1 {
 		log.Greenln("登录成功")
-		getUserCode()
+	} else {
+		msg, _ := json.Get("message").String()
+		log.Redln("登录失败: ", msg)
 	}
 }
 

@@ -1,12 +1,14 @@
 package utils
 
 import (
-	"github.com/gogather/com"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"sync"
+
+	"github.com/gogather/com"
+	"github.com/gogather/com/log"
 	// "github.com/gogather/com/log"
 )
 
@@ -54,7 +56,7 @@ type Http struct {
 	cookies *Jar
 }
 
-func (this *Http) Post(urlstr string, parm url.Values) (string, error) {
+func (this *Http) Post(urlstr string, parm url.Values, storeCookies bool) (string, error) {
 	home := GetHome()
 	u, err := url.Parse(urlstr)
 	if err != nil {
@@ -86,16 +88,18 @@ func (this *Http) Post(urlstr string, parm url.Values) (string, error) {
 	}
 
 	// store cookie
-	cookieMap := jar.Cookies(u)
-	length := len(cookieMap)
-	// log.Greenln(length)
-	if length > 0 {
-		co, err := com.JsonEncode(cookieMap[length-1])
-		if err != nil {
-			return "", err
-		}
+	if storeCookies {
+		cookieMap := jar.Cookies(u)
+		length := len(cookieMap)
+		log.Greenln(cookieMap)
+		if length > 0 {
+			co, err := com.JsonEncode(cookieMap[length-1])
+			if err != nil {
+				return "", err
+			}
 
-		com.WriteFile(pathOscid, co)
+			com.WriteFile(pathOscid, co)
+		}
 	}
 
 	return string(b), err
@@ -113,7 +117,7 @@ func (this *Http) Get(urlstr string) (string, error) {
 
 	// read cookie
 	if com.FileExist(pathOscid) {
-		json,_ := com.ReadFile(pathOscid)
+		json, _ := com.ReadFile(pathOscid)
 		c := jar.ParseCookies(json)
 		jar.SetCookies(u, []*http.Cookie{c})
 	}

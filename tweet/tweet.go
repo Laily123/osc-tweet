@@ -1,39 +1,47 @@
 package tweet
 
 import (
-	"github.com/Laily123/osc-tweet/utils"
-	"github.com/gogather/com"
-	"github.com/gogather/com/log"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"regexp"
-    "time"
-    "net/http"
-    "encoding/json"
-    "fmt"
-    "io/ioutil"
+	"time"
+
+	"osc-tweet/utils"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/gogather/com"
+	"github.com/gogather/com/log"
 )
 
-type OneResult struct{
-    Result string
-    HpEntity HpEntityStc
+const (
+	DEV_TWEET_URL  = "http://www.oschina.com/action/apiv2/tweet"
+	PROD_TWEET_URL = "https://www.oschina.net/action/apiv2/tweet"
+)
+
+type OneResult struct {
+	Result   string
+	HpEntity HpEntityStc
 }
 
-type HpEntityStc struct{
-    StrAutor string
-    StrContent string
+type HpEntityStc struct {
+	StrAutor   string
+	StrContent string
 }
 
 func Tweet(message string) {
 	// read info
-	var data interface{}
+	// var data interface{}
 	var err error
 
 	home := utils.GetHome()
 	pathUserInfo := filepath.Join(home, ".osc", "userinfo")
 	if com.FileExist(pathUserInfo) {
-		json,_ := com.ReadFile(pathUserInfo)
-		data, err = com.JsonDecode(json)
+		// json, _ := com.ReadFile(pathUserInfo)
+		// data, err = com.JsonDecode(json)
 		if err != nil {
 			log.Redln("[Error]", "Parse userinfo file failed")
 			return
@@ -43,52 +51,49 @@ func Tweet(message string) {
 		return
 	}
 
-	jsonData, ok := data.(map[string]interface{})
-	if !ok {
-		log.Redln("[Error]", "illeage data")
-		return
-	}
+	fmt.Printf("test: %s\n", message)
 
-	userId, ok := jsonData["user"].(string)
-	if !ok {
-		log.Redln("[Error]", "get user id failed")
-		return
-	}
+	// jsonData, ok := data.(map[string]interface{})
+	// if !ok {
+	// 	log.Redln("[Error]", "illeage data")
+	// 	return
+	// }
 
-	userCode, ok := jsonData["user_code"].(string)
-	if !ok {
-		log.Redln("[Error]", "get user code failed")
-		return
-	}
+	// userId, ok := jsonData["user"].(string)
+	// if !ok {
+	// 	log.Redln("[Error]", "get user id failed")
+	// 	return
+	// }
+
+	// userCode, ok := jsonData["user_code"].(string)
+	// if !ok {
+	// 	log.Redln("[Error]", "get user code failed")
+	// 	return
+	// }
 
 	http := &utils.Http{}
-	response, err := http.Post("http://www.oschina.net/action/tweet/pub", url.Values{
-		"user":      {userId},
-		"user_code": {userCode},
-		"msg":       {message},
-	})
+	response, err := http.Post(DEV_TWEET_URL, url.Values{
+		"content": {message},
+	}, false)
 
 	if err != nil {
 		log.Warnln("[Error]", err)
 	}
+	fmt.Println("resp: ", response)
 
-	tweetResult, err := com.JsonDecode(response)
+	json, err := simplejson.NewJson([]byte(response))
 	if err != nil {
 		log.Redln("发送失败")
+		log.Redln(err)
 		return
-	} else {
-		_, ok := tweetResult.(map[string]interface{})["error"].(float64)
-		if ok {
-			log.Warnln(tweetResult.(map[string]interface{})["msg"])
-			return
-		}
-
-		id, ok := tweetResult.(map[string]interface{})["log"].(float64)
-		if ok {
-			log.Greenf("开源中国第[%d]条动态发送成功\n", int64(id))
-			log.Blueln(message)
-		}
 	}
+	code, _ := json.Get("code").Int()
+	if code == 0 {
+		msg, _ := json.Get("message").String()
+		log.Redln("发送失败：", msg)
+		return
+	}
+	log.Greenln("发送成功")
 
 }
 
@@ -140,14 +145,14 @@ func Weather(location string) {
 	Tweet(msg)
 }
 
-func One(){
-    t := time.Now()
-    date := t.Format("2006-01-02")
-    var res OneResult
-    url := "http://211.152.49.184:7001/OneForWeb/one/getHpinfo?strDate="+date
-    resp := httpGet(url)
-    json.Unmarshal([]byte(resp),&res)
-    Tweet(res.HpEntity.StrContent)
+func One() {
+	t := time.Now()
+	date := t.Format("2006-01-02")
+	var res OneResult
+	url := "http://211.152.49.184:7001/OneForWeb/one/getHpinfo?strDate=" + date
+	resp := httpGet(url)
+	json.Unmarshal([]byte(resp), &res)
+	Tweet(res.HpEntity.StrContent)
 }
 
 func httpGet(url string) string {
@@ -160,5 +165,3 @@ func httpGet(url string) string {
 	body, err := ioutil.ReadAll(resp.Body)
 	return string(body)
 }
-
-

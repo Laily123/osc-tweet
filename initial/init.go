@@ -2,13 +2,14 @@ package initial
 
 import (
 	"fmt"
+	"os"
+	"osc-tweet/login"
+	"osc-tweet/tweet"
+	"osc-tweet/utils"
+	"path/filepath"
+
 	"github.com/gogather/com"
 	"github.com/gogather/com/log"
-	"os"
-	"github.com/Laily123/osc-tweet/login"
-	"github.com/Laily123/osc-tweet/tweet"
-	"github.com/Laily123/osc-tweet/utils"
-	"path/filepath"
 )
 
 const (
@@ -56,9 +57,9 @@ func Run() {
 				location = os.Args[2]
 			}
 			tweet.Weather(location)
-        }else if os.Args[1] == "one"{
-            tweet.One()
-        } else if os.Args[1] == "help" {
+		} else if os.Args[1] == "one" {
+			tweet.One()
+		} else if os.Args[1] == "help" {
 			showHelp()
 		} else {
 			log.Dangerln("Invalid command, please use")
@@ -91,4 +92,3 @@ func initProfileDir() {
 func readConfig() {
 
 }
-
