@@ -35,6 +35,9 @@ type HpEntityStc struct {
 }
 
 func Tweet(message string) {
+	if message == "" {
+		message = "^_^"
+	}
 	// read info
 	// var data interface{}
 	var err error

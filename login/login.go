@@ -51,6 +51,7 @@ func Login(username string, password string) {
 	code, _ := json.Get("code").Int()
 	if code == 1 {
 		log.Infoln("登录成功")
+		getUserCode()
 	} else {
 		msg, _ := json.Get("message").String()
 		log.Errorln("登录失败: ", msg)

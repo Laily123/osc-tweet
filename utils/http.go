@@ -151,17 +151,17 @@ func (this *Http) Get(urlstr string) (string, error) {
 	}
 
 	// store cookie
-	cookieMap := jar.Cookies(u)
-	length := len(cookieMap)
-	// log.Greenln(length)
-	if length > 0 {
-		co, err := com.JsonEncode(cookieMap[length-1])
-		if err != nil {
-			return "", err
-		}
+	// cookieMap := jar.Cookies(u)
+	// length := len(cookieMap)
+	// // log.Greenln(length)
+	// if length > 0 {
+	// 	co, err := com.JsonEncode(cookieMap[length-1])
+	// 	if err != nil {
+	// 		return "", err
+	// 	}
 
-		com.WriteFile(pathOscid, co)
-	}
+	// 	com.WriteFile(pathOscid, co)
+	// }
 
 	return string(b), err
 }
