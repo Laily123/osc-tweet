@@ -17,9 +17,10 @@ import (
 )
 
 var UA int
+var Devmode = false
 
 const (
-	DEV_TWEET_URL  = "http://www.oschina.com/action/apiv2/tweet"
+	DEV_TWEET_URL  = "http://www.oschina.io/action/apiv2/tweet"
 	PROD_TWEET_URL = "https://www.oschina.net/action/apiv2/tweet"
 )
 
@@ -53,7 +54,12 @@ func Tweet(message string) {
 	}
 
 	http := &utils.Http{}
-	response, err := http.Post(DEV_TWEET_URL, fmt.Sprintf("content=%s", message), false, 0)
+	var response string
+	if Devmode {
+		response, err = http.Post(DEV_TWEET_URL, fmt.Sprintf("content=%s", message), false, 0)
+	} else {
+		response, err = http.Post(PROD_TWEET_URL, fmt.Sprintf("content=%s", message), false, 0)
+	}
 
 	if err != nil {
 		log.Warnln("[Error]", err)
@@ -62,7 +68,7 @@ func Tweet(message string) {
 	json, err := simplejson.NewJson([]byte(response))
 	if err != nil {
 		log.Redln("发送失败")
-		log.Redln(err)
+		log.Redln(response)
 		return
 	}
 	code, _ := json.Get("code").Int()

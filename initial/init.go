@@ -23,6 +23,7 @@ var password string
 var message string
 var phone int
 var configpath string
+var devmode bool
 
 func init() {
 	flag.StringVar(&option, "o", "", "what operation you want,login or tweet")
@@ -30,26 +31,34 @@ func init() {
 	flag.StringVar(&password, "pwd", "", "account password")
 	flag.StringVar(&message, "message", "", "tweet message")
 	flag.StringVar(&configpath, "c", "", "config file path")
+	flag.BoolVar(&devmode, "dev", false, "dev mode to visit the url: oschina.com")
 	flag.IntVar(&phone, "ua", 0, "ua, 0 is iphone, 1 is android, default is 0")
 	flag.Parse()
 }
 func Run() {
 	initProfileDir()
 
+	// check if config file is exist
+	if configpath != "" {
+		Config(configpath)
+		return
+	}
 	if option == "" {
 		flag.Usage()
 		return
 	}
+	if username == "" || password == "" {
+		log.Redln("用户名和密码必须有 使用 -u xxx -p xxxx -o xxx")
+		return
+	}
+
 	utils.UA = phone
+	login.Devmode = devmode
+	tweet.Devmode = devmode
 	switch option {
 	// 登陆
 	case "login":
-		if username == "" && password == "" {
-			log.Dangerln("Invalid command, please use")
-			log.Warnln("  -o login -name username -p password")
-		} else {
-			login.Login(username, password)
-		}
+		login.Login(username, password)
 		// 直接发送动弹
 	case "tweet":
 		if message == "" {
@@ -71,8 +80,6 @@ func Run() {
 		tweet.Weather(location)
 	case "one":
 		tweet.One()
-	case "auto":
-		Config(configpath)
 	case "help":
 		flag.Usage()
 	default:

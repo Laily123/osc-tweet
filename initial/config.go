@@ -16,16 +16,22 @@ func Config(configpath string) {
 		log.Redln("配置文件不存在")
 		return
 	}
+
 	cfg, err := ini.InsensitiveLoad(configpath)
 	printErr(err, "读取配置文件失败")
+
+	devmode := cfg.Section("config").Key("devmode").MustBool(false)
+	login.Devmode = devmode
+	tweet.Devmode = devmode
+	ua := cfg.Section("config").Key("ua").MustInt(0)
+	utils.UA = ua
+
 	username := cfg.Section("user").Key("name").String()
 	pwd := cfg.Section("user").Key("pwd").String()
 	if username == "" || pwd == "" {
 		log.Redln("用户名和密码必须配置")
 	}
 	login.Login(username, pwd)
-	ua := cfg.Section("config").Key("ua").MustInt(0)
-	utils.UA = ua
 
 	step := cfg.Section("config").Key("iterator").MustInt(0)
 	var content string

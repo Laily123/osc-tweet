@@ -11,8 +11,10 @@ import (
 	"github.com/gogather/com/log"
 )
 
+var Devmode = false
+
 const (
-	DEV_URL  = "http://www.oschina.com/action/apiv2/login_validate"
+	DEV_URL  = "http://www.oschina.io/action/apiv2/login_validate"
 	PROD_URL = "https://www.oschina.net/action/apiv2/login_validate"
 )
 
@@ -27,7 +29,13 @@ func Login(username string, password string) {
 	com.WriteFile(pathUsr, username)
 
 	http := &utils.Http{}
-	response, err := http.Post(DEV_URL, fmt.Sprintf("username=%s&pwd=%s", username, password), true, 0)
+	var response string
+	var err error
+	if Devmode {
+		response, err = http.Post(DEV_URL, fmt.Sprintf("username=%s&pwd=%s", username, password), true, 0)
+	} else {
+		response, err = http.Post(PROD_URL, fmt.Sprintf("username=%s&pwd=%s", username, password), true, 0)
+	}
 
 	if err != nil {
 		log.Warnln("请检查网络")
@@ -38,6 +46,7 @@ func Login(username string, password string) {
 	json, err := simplejson.NewJson([]byte(response))
 	if err != nil {
 		log.Redln("登陆失败：", err)
+		return
 	}
 	code, _ := json.Get("code").Int()
 	if code == 1 {
@@ -45,6 +54,7 @@ func Login(username string, password string) {
 	} else {
 		msg, _ := json.Get("message").String()
 		log.Redln("登录失败: ", msg)
+		return
 	}
 }
 
