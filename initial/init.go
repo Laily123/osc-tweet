@@ -9,8 +9,8 @@ import (
 
 	"flag"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/gogather/com"
-	"github.com/gogather/com/log"
 )
 
 const (
@@ -53,7 +53,7 @@ func Run() {
 		return
 	}
 	if username == "" || password == "" {
-		log.Redln("用户名和密码必须有 使用 -u xxx -p xxxx -o xxx")
+		log.Error("用户名和密码必须有 使用 -u xxx -p xxxx -o xxx")
 		return
 	}
 
@@ -66,8 +66,8 @@ func Run() {
 		// 直接发送动弹
 	case "tweet":
 		if message == "" {
-			log.Dangerln("Invalid command, please use")
-			log.Warnln(" -o tweet -m message")
+			log.Error("Invalid command, please use")
+			log.Warn(" -o tweet -m message")
 		} else {
 			tweet.Tweet(message)
 		}
@@ -87,7 +87,7 @@ func Run() {
 	case "help":
 		flag.Usage()
 	default:
-		log.Dangerln("Invalid command, please use")
+		log.Error("Invalid command, please use")
 		flag.Usage()
 	}
 }

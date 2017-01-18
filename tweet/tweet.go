@@ -11,9 +11,9 @@ import (
 
 	"osc-tweet/utils"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/bitly/go-simplejson"
 	"github.com/gogather/com"
-	"github.com/gogather/com/log"
 )
 
 var UA int
@@ -45,7 +45,7 @@ func Tweet(message string) {
 		// json, _ := com.ReadFile(pathUserInfo)
 		// data, err = com.JsonDecode(json)
 		if err != nil {
-			log.Redln("[Error]", "Parse userinfo file failed")
+			log.Errorln("[Error]", "Parse userinfo file failed")
 			return
 		}
 	} else {
@@ -67,17 +67,17 @@ func Tweet(message string) {
 
 	json, err := simplejson.NewJson([]byte(response))
 	if err != nil {
-		log.Redln("发送失败")
-		log.Redln(response)
+		log.Errorln("发送失败")
+		log.Errorln(response)
 		return
 	}
 	code, _ := json.Get("code").Int()
 	if code == 0 {
 		msg, _ := json.Get("message").String()
-		log.Redln("发送失败：", msg)
+		log.Errorln("发送失败：", msg)
 		return
 	}
-	log.Greenln("发送成功")
+	log.Infoln("发送成功")
 
 }
 
@@ -86,12 +86,12 @@ func Joke() {
 	http := &utils.Http{}
 	msg, err := http.Get(api)
 	if err != nil {
-		log.Redln(err)
+		log.Errorln(err)
 	}
 
 	data, err := com.JsonDecode(msg)
 	if err != nil {
-		log.Redln(err)
+		log.Errorln(err)
 	}
 
 	json := data.(map[string]interface{})
@@ -110,12 +110,12 @@ func Weather(location string) {
 	http := &utils.Http{}
 	msg, err := http.Get(api)
 	if err != nil {
-		log.Redln(err)
+		log.Errorln(err)
 	}
 
 	data, err := com.JsonDecode(msg)
 	if err != nil {
-		log.Redln(err)
+		log.Errorln(err)
 	}
 
 	json := data.(map[string]interface{})

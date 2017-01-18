@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"regexp"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/bitly/go-simplejson"
 	"github.com/gogather/com"
-	"github.com/gogather/com/log"
 )
 
 var Devmode = false
@@ -39,21 +39,21 @@ func Login(username string, password string) {
 
 	if err != nil {
 		log.Warnln("请检查网络")
-		log.Redln(err)
+		log.Errorln(err)
 		return
 	}
 
 	json, err := simplejson.NewJson([]byte(response))
 	if err != nil {
-		log.Redln("登陆失败：", err)
+		log.Errorln("登陆失败：", err)
 		return
 	}
 	code, _ := json.Get("code").Int()
 	if code == 1 {
-		log.Greenln("登录成功")
+		log.Infoln("登录成功")
 	} else {
 		msg, _ := json.Get("message").String()
-		log.Redln("登录失败: ", msg)
+		log.Errorln("登录失败: ", msg)
 		return
 	}
 }
@@ -63,7 +63,7 @@ func getUserCode() {
 	http := &utils.Http{}
 	response, err := http.Get("https://www.oschina.net")
 	if err != nil {
-		log.Redln("[Error]", err)
+		log.Errorln("[Error]", err)
 		return
 	}
 

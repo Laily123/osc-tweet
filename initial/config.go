@@ -6,19 +6,22 @@ import (
 	"osc-tweet/tweet"
 	"osc-tweet/utils"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/go-ini/ini"
-	"github.com/gogather/com/log"
 )
 
 // 读取配置文件
 func Config(configpath string) {
 	if configpath == "" {
-		log.Redln("配置文件不存在")
+		log.Error("配置文件不存在")
 		return
 	}
 
 	cfg, err := ini.InsensitiveLoad(configpath)
-	printErr(err, "读取配置文件失败")
+	if err != nil {
+		log.Errorln("读取配置文件失败", err)
+		return
+	}
 
 	devmode := cfg.Section("config").Key("devmode").MustBool(false)
 	login.Devmode = devmode
@@ -29,7 +32,8 @@ func Config(configpath string) {
 	username := cfg.Section("user").Key("name").String()
 	pwd := cfg.Section("user").Key("pwd").String()
 	if username == "" || pwd == "" {
-		log.Redln("用户名和密码必须配置")
+		log.Error("用户名和密码必须配置")
+		return
 	}
 	login.Login(username, pwd)
 
@@ -47,10 +51,4 @@ func Config(configpath string) {
 	step++
 	cfg.Section("config").Key("iterator").SetValue(fmt.Sprintf("%d", step))
 	cfg.SaveTo(configpath)
-}
-
-func printErr(err error, msg string) {
-	if err != nil {
-		log.Redln(msg, err)
-	}
 }
