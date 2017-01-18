@@ -27,9 +27,9 @@ var devmode bool
 
 func init() {
 	flag.StringVar(&option, "o", "", "what operation you want,login or tweet")
-	flag.StringVar(&username, "name", "", "account username")
-	flag.StringVar(&password, "pwd", "", "account password")
-	flag.StringVar(&message, "message", "", "tweet message")
+	flag.StringVar(&username, "u", "", "account username")
+	flag.StringVar(&password, "p", "", "account password")
+	flag.StringVar(&message, "m", "", "tweet message")
 	flag.StringVar(&configpath, "c", "", "config file path")
 	flag.BoolVar(&devmode, "dev", false, "dev mode to visit the url: oschina.com")
 	flag.IntVar(&phone, "ua", 0, "ua, 0 is iphone, 1 is android, default is 0")
@@ -43,6 +43,11 @@ func Run() {
 		Config(configpath)
 		return
 	}
+
+	utils.UA = phone
+	login.Devmode = devmode
+	tweet.Devmode = devmode
+
 	if option == "" {
 		flag.Usage()
 		return
@@ -52,9 +57,8 @@ func Run() {
 		return
 	}
 
-	utils.UA = phone
-	login.Devmode = devmode
-	tweet.Devmode = devmode
+	login.Login(username, password)
+
 	switch option {
 	// 登陆
 	case "login":
